@@ -1,0 +1,1285 @@
+---
+output:
+  html_document
+---
+
+
+<style type="text/css">
+div.main-container {
+  max-width: 2000px;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+<style>
+.tocify {
+color: black;
+}
+<!-- } -->
+<!-- .tocify .tocify-header { -->
+<!--     position: fixed; -->
+<!--     <!-- top: 50px; --> -->
+<!--     left: 50px; -->
+<!--     width: 350px; -->
+<!--     <!-- border: solid 3px black; --> -->
+<!--     <!-- height: 200px; --> -->
+<!--  border: none; -->
+<!-- } -->
+.tocify .tocify-header .active {
+color: white;
+background: #d80b8c;
+font-weight: bold;
+}
+<!-- .tocify .tocify-item { -->
+<!-- background: white; -->
+<!-- color: black; -->
+<!--  border: none; -->
+<!-- } -->
+</style>
+<style>
+  .nav-pills>li>a:hover, .nav-pills>li>a:focus, .nav-pills>li.active>a,     .nav-pills>li.active>a:hover, .nav-pills>li.active>a:focus{
+     background-color: #212070;
+     }
+</style>
+<style>
+.container { width: 1800px; }
+h2 {
+  background-color: #dddedd;
+  color: black;
+  text-indent: 20px;
+  <!-- font-weight: bold; -->
+}
+h3 {
+  background-color: #f2f2f2;
+  color: black;
+  text-indent: 20px;
+  <!-- font-weight: bold; -->
+}
+h4 {
+  <!-- background-color: #dddedd; -->
+  <!-- color: black; -->
+  text-indent: 50px;
+  <!-- font-weight: bold; -->
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+
+```{r Load Packages, echo = FALSE, warning = FALSE, message = FALSE}
+
+# # Load packages -----------------------------------------------------------------------------------
+suppressMessages({
+  memory.limit(size = 8000000)
+  library(readxl)
+  library(writexl)
+  library(plyr)
+  library(dplyr)
+  library(data.table)
+  library(zoo)
+  library(shiny)
+  library(shinydashboard)
+  library(shinydashboardPlus)
+  library(shinyWidgets)
+  library(htmlwidgets)
+  library(lubridate)
+  library(tcltk)
+  library(tidyverse)
+  library(plotly)
+  library(knitr)
+  library(kableExtra)
+  library(leaflet)
+  library(grid)
+  library(gridExtra)
+  library(eeptools)
+  library(ggQC)
+  library(zipcodeR)
+  library(utils)
+  library(scales)
+  library(chron)
+  library(bupaR)
+  library(shiny)
+  library(DT)
+  library(DiagrammeR)
+  library(shinyalert)
+  library(edeaR)
+  library(processmapR)
+  library(processmonitR)
+  library(processanimateR)
+  library(tidyr)
+  library(lubridate)
+  library(RColorBrewer)
+  library(DiagrammeR)
+  library(ggplot2)
+  library(leaflet)
+  library(readr)
+  library(highcharter)
+  library(ggforce) # for 'geom_arc_bar'
+  library(packcircles) # for packed circle graph
+  library(viridis)
+  library(ggiraph)
+  library(treemapify)
+  library(treemap)
+  library(broom)
+  library(extrafont)
+  library(tis) # for US holidays
+  library(vroom)
+  library(sjmisc)
+  library(tools)
+  library(here)
+  library(shinyBS)
+  library(shinyscreenshot)
+  library(fasttime)
+  library(shinycssloaders)
+  library(feather)
+  # library(zipcodeR)
+  library(formattable)
+  library(shinyjs)
+  library(janitor)
+  library(patchwork)
+  library(flexdashboard)
+  # library(tidyverse)
+  # library(viridis)
+  # library(hrbrthemes)
+  # library(plotly)
+  # install.packages("bsts")
+  library(bsts)
+  library(reactable)
+  # install.packages("reactablefmtr")
+  library(reactablefmtr)
+  library(svDialogs)
+  # library(openxlsx)
+  library(flextable)
+  library(officedown)
+  library(officer)
+  library(magrittr)
+  library(webshot) 
+  library(png)
+  library(ggh4x)
+  library(RODBC)
+  library(DBI)
+  library(odbc)
+  library(dbplyr)
+  library(pool)
+  library(emojifont)
+})
+
+
+```
+
+
+```{r Graph asthetics, echo = FALSE, warning = FALSE, message = FALSE}
+### Color Functions for Graphs ============================================================
+
+# Mount Sinai corporate colors "USE THIS TO ADD COLORS"
+MountSinai_colors <- c(
+  `dark purple`  = "#212070",
+  `dark pink`    = "#d80b8c",
+  `dark blue`    = "#00aeef",
+  `dark grey`    = "#7f7f7f",
+  `yellow`       = "#ffc000",
+  `purple`       = "#7030a0",
+  `med purple`   = "#5753d0",
+  `med pink`     = "#f75dbe",
+  `med blue`     = "#5cd3ff",
+  `med grey`     = "#a5a7a5",
+  `light purple` = "#c7c6ef",
+  `light pink`   = "#fcc9e9",
+  `light blue`   = "#c9f0ff",
+  `light grey`   = "#dddedd"
+  )
+
+# Function to extract Mount Sinai colors as hex codes
+# Use Character names of MountSinai_colors
+
+MountSinai_cols <- function(...) {
+  cols <- c(...)
+  
+  if (is.null(cols))
+    return (MountSinai_colors)
+  
+  MountSinai_colors[cols]
+}
+
+# Color Function that can be used to call all colors is "MountSinai_cols()"
+# Use in ggplot 
+
+  #MountSinai_cols()       # will provide all colors and their hex codes in a table 
+  #MountSinai_cols("pink") # will provide color name and the hex code for the pink color
+
+# Create palettes 
+MountSinai_palettes <- list(
+  `all`   = MountSinai_cols("dark purple","dark pink","dark blue","dark grey",
+                            "med purple","med pink","med blue","med grey", 
+                            "light purple","light pink","light blue","light grey"),
+  
+  `main`  = MountSinai_cols("dark purple","dark pink","dark blue","dark grey"),
+  
+  `purple`  = MountSinai_cols("dark purple","med purple","light purple"),
+  
+  `pink`  = MountSinai_cols("dark pink","med pink","light pink"),
+  
+  `blue`  = MountSinai_cols("dark blue", "med blue", "light blue"),
+  
+  `grey`  = MountSinai_cols("dark grey", "med grey", "light grey"),
+  
+  `purpleGrey` = MountSinai_cols("dark purple", "dark grey"),
+  
+  `pinkBlue` = MountSinai_cols("dark pink", "dark blue")
+  
+)
+
+# MountSinai_palettes
+# Return function to interpolate a Mount Sinai color palette
+# default value is the main palette, reverse = True will change the order
+
+MountSinai_pal <- function(palette = "all", reverse = FALSE, ...) {
+  pal <- MountSinai_palettes[[palette]]
+  
+  if (reverse) pal <- rev(pal)
+  
+  colorRampPalette(pal, ...)
+}
+
+
+
+# Scale Function for ggplot can be used instead of scale_color_manual
+scale_color_MountSinai <- function(palette = "all", discrete = TRUE, reverse = FALSE, ...) {
+  pal <- MountSinai_pal(palette = palette, reverse = reverse)
+  
+  if (discrete) {
+    discrete_scale("colour", paste0("MountSinai_", palette), palette = pal, ...)
+  } else {
+    scale_color_gradientn(colours = pal(256), ...)
+  }
+}
+
+# Scale Fill for ggplot insetead of scale_fill_manual 
+scale_fill_MountSinai <- function(palette = "all", discrete = TRUE, reverse = FALSE, ...) {
+  pal <- MountSinai_pal(palette = palette, reverse = reverse)
+
+  if (discrete) {
+    discrete_scale("fill", paste0("MountSinai_", palette), palette = pal, ...)
+  } else {
+    scale_fill_gradientn(colours = pal(256), ...)
+  }
+}
+
+# Use in ggplot 
+  # scale_color_MountSinai("main")
+
+```
+
+
+```{r Global Functions, echo = FALSE, warning = FALSE, message = FALSE}
+
+'%!in%' <- function(x,y)!('%in%'(x,y)) # Does not include
+not_all_na <- function(x) all(!is.na(x)) # Exclude columns with All NAs
+
+```
+
+
+```{r Processed Data Saving Directory, }
+
+path <- "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/physician-access/"
+
+```
+
+
+```{r Import Scheduling Data, echo = FALSE, warning = FALSE, message = FALSE}
+
+scheduling_data_raw <- as.data.frame(readRDS("/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/historical_data.rds")) %>%
+  filter(!is.na(Campus)) %>%
+  filter(Campus %in% c("NETWORK","MSM","MSH-MSDFP","ONCOLOGY","MSW","MSBI","MSUS","MSH- AMBULATORY CARE","MSDD"))
+
+scheduling_data_raw <- scheduling_data_raw %>%
+  mutate(New.PT2 = case_when(New.PT2 == "New" ~ 'New',TRUE ~ 'Established'),
+         Appt.Made.DateYear = as.Date(Appt.Made.DTTM, format="%Y-%m-%d"),
+         Appt.Made.MonthYear = format(as.Date(Appt.Made.DTTM, format="%m/%d/%Y"), "%Y-%m"),
+         Appt.Made.Year = format(as.Date(Appt.Made.DTTM, format="%m/%d/%Y"), "%Y"),
+         Appt.Cancel.DateYear = as.Date(Appt.Cancel.DTTM, format="%Y-%m-%d")) %>%
+  mutate(Appt.Status = case_when(Appt.Status == "Canceled" & Appt.DateYear == Appt.Cancel.DateYear ~ "Same-Day Canceled",
+                                 TRUE ~ Appt.Status)) %>%
+  mutate(Visit.Method = ifelse(str_detect(Visit.Method, "PERSON"),"inPerson","telehealth"))
+
+date_start <- as.Date("2022-01-01", format="%Y-%m-%d")
+date_end <- as.Date("2022-11-30", format="%Y-%m-%d")
+
+```
+
+
+```{r Practicing Sites and Departments, echo = FALSE, warning = FALSE, message = FALSE}
+
+site_depts_prov <- scheduling_data_raw %>%
+  filter(Appt.Status == "Arrived") %>%
+  filter(Appt.DateYear <= date_end) %>%
+  group_by(NPI, Provider, Appt.MonthYear) %>%
+  summarise(practicing_sites = toString(unique(Campus)),
+            practicing_depts = toString(unique(Department))) %>%
+  mutate(practicing_sites = gsub("NA", "",practicing_sites))
+  
+```
+
+
+```{r Wait Time Metrics, echo = FALSE, warning = FALSE, message = FALSE}
+
+# Access by Provider -----------------------------------------------------------
+waitTime_prov <- scheduling_data_raw %>%
+  filter(Wait.Time >= 0) %>%
+  filter(Appt.Made.Year == 2022) %>%
+  filter(Appt.Made.DateYear <= date_end) %>%
+  filter(New.PT2 == "New") %>%
+  group_by(NPI, Provider, Appt.Made.MonthYear) %>%
+  summarise(med_wait = as.numeric(median(Wait.Time, na.rm = TRUE)))
+
+waitTime_prov <- waitTime_prov %>%
+  rename(Appt.MonthYear = Appt.Made.MonthYear)
+
+# Access by Provider and Site --------------------------------------------------
+waitTime_prov_site <- scheduling_data_raw %>%
+  filter(Wait.Time >= 0) %>%
+  filter(Appt.Made.Year == 2022) %>%
+  filter(Appt.Made.DateYear <= date_end) %>%
+  filter(New.PT2 == "New") %>%
+  group_by(NPI, Provider, Appt.Made.MonthYear, Campus) %>%
+  summarise(med_wait = as.numeric(median(Wait.Time, na.rm = TRUE)))
+
+waitTime_prov_site <- waitTime_prov_site %>%
+  rename(Appt.MonthYear = Appt.Made.MonthYear)
+
+# Access by Specialty ----------------------------------------------------------
+waitTime_specialty <- scheduling_data_raw %>%
+  filter(Wait.Time >= 0) %>%
+  filter(Appt.Made.Year == 2022) %>%
+  filter(Appt.Made.DateYear <= date_end) %>%
+  filter(New.PT2 == "New") %>%
+  group_by(Campus.Specialty, Appt.Made.MonthYear) %>%
+  summarise(med_wait = as.numeric(median(Wait.Time, na.rm = TRUE)))
+
+waitTime_specialty <- waitTime_specialty %>%
+  rename(Appt.MonthYear = Appt.Made.MonthYear)
+
+# Access by Specialty and Site --------------------------------------------------------
+waitTime_specialty_site <- scheduling_data_raw %>%
+  filter(Wait.Time >= 0) %>%
+  filter(Appt.Made.Year == 2022) %>%
+  filter(Appt.Made.DateYear <= date_end) %>%
+  filter(New.PT2 == "New") %>%
+  group_by(Campus.Specialty, Campus, Appt.Made.MonthYear) %>%
+  summarise(med_wait = as.numeric(median(Wait.Time, na.rm = TRUE)))
+
+waitTime_specialty_site <- waitTime_specialty_site %>%
+  rename(Appt.MonthYear = Appt.Made.MonthYear)
+
+```
+
+
+```{r New Patient Metrics, echo = FALSE, warning = FALSE, message = FALSE}
+
+# Percent of New Patients Scheduled within 14 Days by Provider -----------------
+newPT_prov <- scheduling_data_raw %>%
+  filter(Wait.Time >= 0) %>%
+  filter(Appt.Made.Year == 2022) %>%
+  filter(Appt.Made.DateYear <= date_end) %>%
+  filter(New.PT2 == "New") %>%
+  mutate(waitTime_14days = case_when(Wait.Time <= 14 ~ "Yes",
+                                    TRUE ~ "No")) %>%
+  group_by(NPI, Provider, Appt.Made.MonthYear, waitTime_14days) %>%
+  summarise(total = n()) %>%
+  pivot_wider(names_from = waitTime_14days,
+              values_from = total,
+              values_fill = 0) %>%
+  mutate(perc_14days = Yes/(Yes+No))
+
+newPT_prov <- newPT_prov %>%
+  rename(Appt.MonthYear = Appt.Made.MonthYear)
+
+
+# Percent of New Patients Scheduled within 14 Days by Provider and Site----------
+newPT_prov_site <- scheduling_data_raw %>%
+  filter(Wait.Time >= 0) %>%
+  filter(Appt.Made.Year == 2022) %>%
+  filter(Appt.Made.DateYear <= date_end) %>%
+  filter(New.PT2 == "New") %>%
+  mutate(waitTime_14days = case_when(Wait.Time <= 14 ~ "Yes",
+                                    TRUE ~ "No")) %>%
+  group_by(NPI, Provider, Appt.Made.MonthYear, Campus, waitTime_14days) %>%
+  summarise(total = n()) %>%
+  pivot_wider(names_from = waitTime_14days,
+              values_from = total,
+              values_fill = 0) %>%
+  mutate(perc_14days = Yes/(Yes+No))
+
+newPT_prov_site <- newPT_prov_site %>%
+  rename(Appt.MonthYear = Appt.Made.MonthYear)
+
+# Percent of New Patients Scheduled within 14 Days by Specialty -----------------
+newPT_specialty <- scheduling_data_raw %>%
+  filter(Wait.Time >= 0) %>%
+  filter(Appt.Made.Year == 2022) %>%
+  filter(Appt.Made.DateYear <= date_end) %>%
+  filter(New.PT2 == "New") %>%
+  mutate(waitTime_14days = case_when(Wait.Time <= 14 ~ "Yes",
+                                    TRUE ~ "No")) %>%
+  group_by(Campus.Specialty, Appt.Made.MonthYear, waitTime_14days) %>%
+  summarise(total = n()) %>%
+  pivot_wider(names_from = waitTime_14days,
+              values_from = total,
+              values_fill = 0) %>%
+  mutate(perc_14days = Yes/(Yes+No))
+
+newPT_specialty <- newPT_specialty %>%
+  rename(Appt.MonthYear = Appt.Made.MonthYear)
+
+# Percent of New Patients Scheduled within 14 Days by Specialty and Site---------
+newPT_specialty_site <- scheduling_data_raw %>%
+  filter(Wait.Time >= 0) %>%
+  filter(Appt.Made.Year == 2022) %>%
+  filter(Appt.Made.DateYear <= date_end) %>%
+  filter(New.PT2 == "New") %>%
+  mutate(waitTime_14days = case_when(Wait.Time <= 14 ~ "Yes",
+                                    TRUE ~ "No")) %>%
+  group_by(Campus.Specialty, Campus, Appt.Made.MonthYear, waitTime_14days) %>%
+  summarise(total = n()) %>%
+  pivot_wider(names_from = waitTime_14days,
+              values_from = total,
+              values_fill = 0) %>%
+  mutate(perc_14days = Yes/(Yes+No))
+
+newPT_specialty_site <- newPT_specialty_site %>%
+  rename(Appt.MonthYear = Appt.Made.MonthYear)
+
+
+```
+
+
+```{r Volume Metrics, echo = FALSE, warning = FALSE, message = FALSE}
+
+# Volume by Provider -----------------------------------------------------------
+volume_prov <- scheduling_data_raw %>%
+  filter(Appt.Status == "Arrived") %>%
+  filter(Appt.Year == 2022) %>%
+  filter(Appt.DateYear <= date_end) %>%
+  group_by(NPI, Provider, Appt.MonthYear, New.PT2) %>%
+  summarise(total = n()) %>%
+  pivot_wider(names_from = New.PT2,
+              values_from = total,
+              values_fill = 0) %>%
+  mutate(total = New + Established,
+         new_perc = New/(total))
+
+
+# Volume by Provider and Site --------------------------------------------------
+volume_prov_site <- scheduling_data_raw %>%
+  filter(Appt.Status == "Arrived") %>%
+  filter(Appt.Year == 2022) %>%
+  filter(Appt.DateYear <= date_end) %>%
+  group_by(NPI, Provider, Appt.MonthYear, Campus, New.PT2) %>%
+  summarise(total = n()) %>%
+  pivot_wider(names_from = New.PT2,
+              values_from = total,
+              values_fill = 0) %>%
+  mutate(total = New + Established,
+         new_perc = New/(total))
+
+# Volume by Specialty -----------------------------------------------------------
+volume_specialty <- scheduling_data_raw %>%
+  filter(Appt.Status == "Arrived") %>%
+  filter(Appt.Year == 2022) %>%
+  filter(Appt.DateYear <= date_end) %>%
+  group_by(Campus.Specialty, Appt.MonthYear, New.PT2) %>%
+  summarise(total = n()) %>%
+  pivot_wider(names_from = New.PT2,
+              values_from = total,
+              values_fill = 0) %>%
+  mutate(total = New + Established,
+         new_perc = New/(total))
+
+
+
+# Volume by Specialty and Site --------------------------------------------------
+volume_specialty_site <- scheduling_data_raw %>%
+  filter(Appt.Status == "Arrived") %>%
+  filter(Appt.Year == 2022) %>%
+  filter(Appt.DateYear <= date_end) %>%
+  group_by(Campus.Specialty, Campus, Appt.MonthYear, New.PT2) %>%
+  summarise(total = n()) %>%
+  pivot_wider(names_from = New.PT2,
+              values_from = total,
+              values_fill = 0) %>%
+  mutate(total = New + Established,
+         new_perc = New/(total))
+```
+
+
+```{r No Show Metrics, echo = FALSE, warning = FALSE, message = FALSE}
+
+# Volume by Provider -----------------------------------------------------------
+noShows_prov <- scheduling_data_raw %>%
+  filter(Appt.Year == 2022) %>%
+  filter(Appt.DateYear <= date_end) %>%
+  group_by(NPI, Provider, Appt.MonthYear, Appt.Status) %>%
+  summarise(total = n()) %>%
+  pivot_wider(names_from = Appt.Status,
+              values_from = total,
+              values_fill = 0) 
+noShows_prov$total <- rowSums(noShows_prov[,4:length(noShows_prov)])
+noShows_prov <- noShows_prov %>%
+  mutate(noShow_perc = (`No Show` + `Same-Day Canceled`)/total)
+
+
+
+# Volume by Provider and Site --------------------------------------------------
+noShows_prov_site <- scheduling_data_raw %>%
+  filter(Appt.Year == 2022) %>%
+  filter(Appt.DateYear <= date_end) %>%
+  group_by(NPI, Provider, Appt.MonthYear, Campus, Appt.Status) %>%
+  summarise(total = n()) %>%
+  pivot_wider(names_from = Appt.Status,
+              values_from = total,
+              values_fill = 0) 
+noShows_prov_site$total <- rowSums(noShows_prov_site[,5:length(noShows_prov_site)])
+noShows_prov_site <- noShows_prov_site %>%
+  mutate(noShow_perc = (`No Show` + `Same-Day Canceled`)/total)
+
+# Volume by Specialty -----------------------------------------------------------
+noShows_specialty <- scheduling_data_raw %>%
+  filter(Appt.Year == 2022) %>%
+  filter(Appt.DateYear <= date_end) %>%
+  group_by(Campus.Specialty, Appt.MonthYear, Appt.Status) %>%
+  summarise(total = n()) %>%
+  pivot_wider(names_from = Appt.Status,
+              values_from = total,
+              values_fill = 0) 
+noShows_specialty$total <- rowSums(noShows_specialty[,3:length(noShows_specialty)])
+noShows_specialty <- noShows_specialty %>%
+  mutate(noShow_perc = (`No Show` + `Same-Day Canceled`)/total)
+
+
+# Volume by Specialty and Site --------------------------------------------------
+noShows_specialty_site <- scheduling_data_raw %>%
+  filter(Appt.Year == 2022) %>%
+  filter(Appt.DateYear <= date_end) %>%
+  group_by(Campus.Specialty, Campus, Appt.MonthYear, Appt.Status) %>%
+  summarise(total = n()) %>%
+  pivot_wider(names_from = Appt.Status,
+              values_from = total,
+              values_fill = 0) 
+noShows_specialty_site$total <- rowSums(noShows_specialty_site[,4:length(noShows_specialty_site)])
+noShows_specialty_site <- noShows_specialty_site %>%
+  mutate(noShow_perc = (`No Show` + `Same-Day Canceled`)/total)
+
+```
+
+
+```{r Telehealth Metrics, echo = FALSE, warning = FALSE, message = FALSE}
+
+# Volume by Provider -----------------------------------------------------------
+tele_volume_prov <- scheduling_data_raw %>%
+  filter(Appt.Status == "Arrived") %>%
+  filter(Appt.Year == 2022) %>%
+  filter(Appt.DateYear <= date_end) %>%
+  group_by(NPI, Provider, Appt.MonthYear, Visit.Method) %>%
+  summarise(total = n()) %>%
+  pivot_wider(names_from = Visit.Method,
+              values_from = total,
+              values_fill = 0) %>%
+  mutate(tele_perc = telehealth/ (inPerson + telehealth))
+
+
+# Volume by Provider and Site --------------------------------------------------
+tele_volume_prov_site <- scheduling_data_raw %>%
+  filter(Appt.Status == "Arrived") %>%
+  filter(Appt.Year == 2022) %>%
+  filter(Appt.DateYear <= date_end) %>%
+  group_by(NPI, Provider, Appt.MonthYear, Campus, Visit.Method) %>%
+  summarise(total = n()) %>%
+  pivot_wider(names_from = Visit.Method,
+              values_from = total,
+              values_fill = 0) %>%
+  mutate(tele_perc = telehealth/ (inPerson + telehealth))
+
+# Volume by Specialty -----------------------------------------------------------
+tele_volume_specialty <- scheduling_data_raw %>%
+  filter(Appt.Status == "Arrived") %>%
+  filter(Appt.Year == 2022) %>%
+  filter(Appt.DateYear <= date_end) %>%
+  group_by(Campus.Specialty, Appt.MonthYear, Visit.Method) %>%
+  summarise(total = n()) %>%
+  pivot_wider(names_from = Visit.Method,
+              values_from = total,
+              values_fill = 0) %>%
+  mutate(tele_perc = telehealth/ (inPerson + telehealth))
+
+
+
+# Volume by Specialty and Site --------------------------------------------------
+tele_volume_specialty_site <- scheduling_data_raw %>%
+  filter(Appt.Status == "Arrived") %>%
+  filter(Appt.Year == 2022) %>%
+  filter(Appt.DateYear <= date_end) %>%
+  group_by(Campus.Specialty, Campus, Appt.MonthYear, Visit.Method) %>%
+  summarise(total = n()) %>%
+  pivot_wider(names_from = Visit.Method,
+              values_from = total,
+              values_fill = 0) %>%
+  mutate(tele_perc = telehealth/ (inPerson + telehealth))
+
+```
+
+
+```{r Merge Processed Scheduling Metrics, echo = FALSE, warning = FALSE, message = FALSE}
+
+scheduling_metrics_prov <- Reduce(function(x, y) merge(x, y, all=TRUE), list(waitTime_prov, 
+                                                                             newPT_prov[,c("NPI","Provider","Appt.MonthYear","perc_14days")], 
+                                                                             volume_prov[,c("NPI","Provider","Appt.MonthYear","total","new_perc")],
+                                                                             tele_volume_prov[,c("NPI","Provider","Appt.MonthYear","tele_perc")],
+                                                                             noShows_prov[,c("NPI","Provider","Appt.MonthYear","noShow_perc")]))
+
+scheduling_metrics_prov_site <- Reduce(function(x, y) merge(x, y, all=TRUE), list(waitTime_prov_site, 
+                                                                             newPT_prov_site[,c("NPI","Provider","Appt.MonthYear","Campus","perc_14days")], 
+                                                                             volume_prov_site[,c("NPI","Provider","Appt.MonthYear","Campus", "total","new_perc")],
+                                                                             tele_volume_prov_site[,c("NPI","Provider","Appt.MonthYear","Campus", "tele_perc")],
+                                                                             noShows_prov_site[,c("NPI","Provider","Appt.MonthYear","Campus","noShow_perc")]))
+
+scheduling_metrics_specialty <- Reduce(function(x, y) merge(x, y, all=TRUE), list(waitTime_specialty, 
+                                                                             newPT_specialty[,c("Campus.Specialty","Appt.MonthYear","perc_14days")], 
+                                                                             volume_specialty[,c("Campus.Specialty","Appt.MonthYear","total","new_perc")],
+                                                                             tele_volume_specialty[,c("Campus.Specialty","Appt.MonthYear","tele_perc")],
+                                                                             noShows_specialty[,c("Campus.Specialty","Appt.MonthYear","noShow_perc")]))
+
+scheduling_metrics_specialty_site <- Reduce(function(x, y) merge(x, y, all=TRUE), list(waitTime_specialty_site, 
+                                                                             newPT_specialty_site[,c("Campus.Specialty","Campus", "Appt.MonthYear","perc_14days")], 
+                                                                             volume_specialty_site[,c("Campus.Specialty","Campus","Appt.MonthYear","total","new_perc")],
+                                                                             tele_volume_specialty_site[,c("Campus.Specialty","Campus","Appt.MonthYear","tele_perc")],
+                                                                             noShows_specialty_site[,c("Campus.Specialty","Appt.MonthYear","noShow_perc")]))
+
+
+saveRDS(scheduling_metrics_prov, paste0(path,"scheduling_metrics_prov.rds"))
+saveRDS(scheduling_metrics_prov_site, paste0(path,"scheduling_metrics_prov_site.rds"))
+saveRDS(scheduling_metrics_specialty, paste0(path,"scheduling_metrics_specialty.rds"))
+saveRDS(scheduling_metrics_specialty_site, paste0(path,"scheduling_metrics_specialty_site.rds"))
+
+saveRDS(site_depts_prov, paste0(path,"site_depts_prov.rds"))
+
+```
+
+
+```{r Storage Clean Up, echo = FALSE, warning = FALSE, message = FALSE}
+
+rm(scheduling_data_raw)
+invisible(gc())
+
+```
+
+
+```{r Import Slot Data, echo = FALSE, warning = FALSE, message = FALSE}
+
+# Connection to Oracle DB ------------------------------------------------------
+conn1 <- dbPool(drv = odbc(), dsn = "OAO Cloud DB SoYoun", timeout = 30)
+
+# Import Slot Availability Data ------------------------------------------------
+slot_raw_tbl <- tbl(conn1, "Y_DM_BOOKED_FILLED_RATE")
+
+
+# slot_data_dept <- slot_raw_tbl %>%
+#   group_by(SITE, DEPARTMENT_NAME) %>%
+#   summarise(total = n()) %>%
+#   collect()
+#
+#   write_xlsx(slot_data_dept, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/slot_data_depts.xlsx")
+
+
+# cardiology_slot <- slot_raw_tbl %>%
+#   filter(PROVIDER_NAME == "TING, WINDSOR") %>%
+#   filter(CONTACT_DATE == TO_DATE("2022-04-22 00:00:00", "YYYY-MM-DD HH24:MI:SS")) %>%
+#   collect()
+#
+#  write_xlsx(cardiology_slot, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/cardiology_slot_2022-04-22.xlsx")
+
+
+# slot_validation <- slot_raw_tbl %>%
+#   filter(PROVIDER_NAME == "JIANG, RUI") %>%
+#   mutate(Appt.DateYear = TO_DATE(CONTACT_DATE)) %>%
+#   mutate(Appt.Year = year(CONTACT_DATE),
+#          Appt.Month = month(CONTACT_DATE)) %>%
+#   filter(Appt.Year == 2022) %>%
+#   collect()
+#
+#
+#  write_xlsx(slot_validation , "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/JIANG, RUI_validation.xlsx")
+
+
+
+slot_raw <- slot_raw_tbl %>%
+    mutate(Appt.DateYear = TO_DATE(CONTACT_DATE)) %>%
+  mutate(Appt.Year = year(CONTACT_DATE),
+         Appt.Month = month(CONTACT_DATE)) %>%
+  filter(Appt.Year == 2022) %>%
+  group_by(SITE, DEPARTMENT_SPECIALTY, DEPARTMENT_NAME, NPI,
+           VISIT_GROUP_NUM, VISIT_PROV_STAFF_RESOURCE_C,
+           Appt.DateYear, Appt.Year, Appt.Month) %>%
+  summarise(total_booked_dur = sum(BOOKED_MINUTES, na.rm = TRUE),
+            total_template_dur = sum(SLOT_LENGTH, na.rm = TRUE),
+            total_arrived_dur = sum(ARRIVED_MINUTES, na.rm = TRUE)) %>%
+  collect() %>%
+  mutate(Appt.MonthYear = format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%Y-%m"),
+         Appt.MonNum = as.numeric(format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%m")),
+         Appt.Month = format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%b"),
+         Appt.Quarter = quarters(as.Date(Appt.DateYear, format="%Y-%m-%d")),
+         Appt.Week = floor_date(as.Date(Appt.DateYear, format="%Y-%m-%d"), unit="week", week_start = 1),
+         Appt.Day = format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%a"))
+
+
+saveRDS(slot_raw, paste(path,"slot_raw.rds"))
+
+  # write_xlsx(slot_raw, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/slot_avail_data_validation_msus_w_unavailable.xlsx")
+  
+```
+
+
+```{r Provider Practicing Sites and Departments Scheduling Data, echo = FALSE, warning = FALSE, message = FALSE}
+
+practicing_sites_depts <- slot_raw %>%
+  group_by(NPI, Appt.MonthYear, SITE, DEPARTMENT_NAME) %>%
+  summarise(practicing_sites = n()) %>%
+  group_by(NPI, Appt.MonthYear) %>%
+  summarise(practicing_sites = toString(unique(SITE)),
+            practicing_depts = toString(unique(DEPARTMENT_NAME))) %>%
+  mutate(practicing_sites = gsub("NA", "",practicing_sites))
+
+```
+
+
+```{r Import Productivity Data, echo = FALSE, warning = FALSE, message = FALSE}
+
+productivity_data <- read_excel(paste(path,"Master Productivity file Budget Jan-Nov 22.xlsx"), sheet = "Master Prod 2022")
+
+
+current_year_cols <- colnames(productivity_data[grepl("2022",colnames(productivity_data))])
+
+
+current_prod_data <- productivity_data %>%
+  dplyr::select(`Master Dept`, Speciality, Physician, NPI, `2022 Calculate %`, `current_year_cols`)
+
+month_number <- as.numeric(format(as.Date(date_end, format="%Y-%m-%d"), "%m"))
+month_cols <- format(seq(as.Date(date_start), as.Date(date_end), "months"), "%Y-%m")
+
+
+# Monthly wRVU Data ------------------------------------------------------------
+prov_wRVU_data <- current_prod_data[,1:(5+month_number)]
+colnames(prov_wRVU_data) <- c("Master Dept","Specialty","Physician","NPI","2022 Calculated %", month_cols)
+prov_wRVU_data <- prov_wRVU_data %>%
+  pivot_longer(6:length(prov_wRVU_data),
+               names_to = "Appt.MonthYear",
+               values_to = "wRVUs") %>%
+  add_column(`2022 Reported CFTE` = "", .after = "NPI") %>%
+  mutate(NPI = as.character(NPI))
+
+prov_wRVU_data$`2022 Reported CFTE` <- productivity_data$`2022 Reported CFTE `[match(prov_wRVU_data$NPI, productivity_data$NPI)]
+
+# Monthly Collections Data -----------------------------------------------------
+prov_collections_data <- current_prod_data %>%
+  dplyr::select(`Master Dept`, Speciality, Physician, NPI, `2022 Calculate %`, colnames(current_prod_data[grepl("Collections",colnames(current_prod_data))]))
+prov_collections_data  <- prov_collections_data [,1:(5+month_number)]
+colnames(prov_collections_data) <- c("Master Dept","Specialty","Physician","NPI","2022 Calculated %",month_cols)
+prov_collections_data <- prov_collections_data %>%
+  pivot_longer(6:length(prov_collections_data),
+               names_to = "Appt.MonthYear",
+               values_to = "collections") %>%
+  mutate(NPI = as.character(NPI))
+
+```
+
+
+```{r Total Template Hours, echo = FALSE, warning = FALSE, message = FALSE}
+
+# Total Available Hours -----------------------------------------------
+## Sum of Slot Length; excludes overbooking slots (only counted as one unique slot)
+## Excludes Unavailable & Held Times
+
+slot_template_hours_summary <- slot_raw_tbl %>%
+  mutate(unavail = paste0(TIME_UNAVAIL_YN,DAY_UNAVAIL_YN,DAY_HELD_YN,TIME_HELD_YN)) %>%
+  filter(unavail == "NNNN") %>%
+  mutate(Appt.DateYear = TO_DATE(CONTACT_DATE)) %>%
+  mutate(Appt.Year = year(CONTACT_DATE),
+         Appt.Month = month(CONTACT_DATE)) %>%
+  filter(Appt.Year == 2022) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.Year, Appt.Month, Appt.DateYear) %>%
+  summarise(total_template_dur = sum(SLOT_LENGTH, na.rm = TRUE)) %>%
+  collect() %>%
+  mutate(Appt.MonthYear = format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%Y-%m"),
+         Appt.MonNum = as.numeric(format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%m")),
+         Appt.Month = format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%b"),
+         Appt.Quarter = quarters(as.Date(Appt.DateYear, format="%Y-%m-%d")),
+         Appt.Week = floor_date(as.Date(Appt.DateYear, format="%Y-%m-%d"), unit="week", week_start = 1),
+         Appt.Day = format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%a")) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.MonthYear, Appt.Week) %>%
+  summarise(total_template_dur = sum(total_template_dur, na.rm = TRUE)) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.MonthYear) %>%
+  summarise(total_month_template_dur = sum(total_template_dur)/60,
+            total_month_template_session = total_month_template_dur/4,
+            avg_week_template_dur = mean(total_template_dur)/60,
+            avg_week_template_session = avg_week_template_dur/(4))
+
+
+saveRDS(slot_template_hours_summary, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/physician-access/slot_template_hours_summary.rds")
+
+
+
+slot_template_hours_summary_site <- slot_raw_tbl %>%
+  mutate(unavail = paste0(TIME_UNAVAIL_YN,DAY_UNAVAIL_YN,DAY_HELD_YN,TIME_HELD_YN)) %>%
+  filter(unavail == "NNNN") %>%
+  mutate(Appt.DateYear = TO_DATE(CONTACT_DATE)) %>%
+  mutate(Appt.Year = year(CONTACT_DATE),
+         Appt.Month = month(CONTACT_DATE)) %>%
+  filter(Appt.Year == 2022) %>%
+  group_by(NPI, PROVIDER_NAME, VISIT_PROV_STAFF_RESOURCE_C, SITE, Appt.Year, Appt.Month, Appt.DateYear) %>%
+  summarise(total_template_dur = sum(SLOT_LENGTH, na.rm = TRUE)) %>%
+  collect() %>%
+  mutate(Appt.MonthYear = format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%Y-%m"),
+         Appt.MonNum = as.numeric(format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%m")),
+         Appt.Month = format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%b"),
+         Appt.Quarter = quarters(as.Date(Appt.DateYear, format="%Y-%m-%d")),
+         Appt.Week = floor_date(as.Date(Appt.DateYear, format="%Y-%m-%d"), unit="week", week_start = 1),
+         Appt.Day = format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%a")) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, SITE, Appt.MonthYear, Appt.Week) %>%
+  summarise(total_template_dur = sum(total_template_dur, na.rm = TRUE)) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, SITE, Appt.MonthYear) %>%
+  summarise(total_month_template_dur = sum(total_template_dur)/60,
+            total_month_template_session = total_month_template_dur/4,
+            avg_week_template_dur = mean(total_template_dur)/60,
+            avg_week_template_session = avg_week_template_dur/(4))
+
+
+saveRDS(slot_template_hours_summary_site, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/physician-access/slot_template_hours_summary_site.rds")
+
+# rm(slot_template_hours_summary_site)
+
+
+# Arrived Hours issue found in "slot_booked_filled_check.xlsx"
+# slot_booked_filled_check <- slot_raw_tbl %>%
+#   filter(PROVIDER_NAME == "KIM, RENITA SUHYUN") %>%
+#   filter(CONTACT_DATE == TO_DATE("2022-11-29 00:00:00", "YYYY-MM-DD HH24:MI:SS")) %>%
+#   collect()
+#
+#
+#  write_xlsx(slot_booked_filled_check, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/slot_booked_filled_check.xlsx")
+
+```
+
+
+```{r Total Booked Hours, echo = FALSE, warning = FALSE, message = FALSE}
+
+# Total Booked and Arrived Hours -----------------------------------------------
+slot_booked_hours_summary <- slot_raw %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, VISIT_GROUP_NUM, Appt.MonthYear, Appt.Week) %>%
+  summarise(total_booked_dur = sum(total_booked_dur, na.rm = TRUE)) %>%
+  mutate(VISIT_GROUP_NUM = ifelse(is.na(VISIT_GROUP_NUM), "booked_established", "booked_new")) %>%
+  pivot_wider(names_from = VISIT_GROUP_NUM,
+              values_from = total_booked_dur,
+              values_fill = 0) %>%
+  mutate(booked_total = booked_established + booked_new) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.MonthYear) %>%
+  summarise(total_month_booked_established = sum(booked_established)/60,
+            total_month_booked_new = sum(booked_new)/60,
+            total_month_booked = sum(booked_total)/60,
+            total_month_booked_session = total_month_booked/4,
+            avg_week_booked = mean(booked_total)/60,
+            avg_week_booked_session = avg_week_booked/4)
+
+slot_booked_hours_summary <- slot_booked_hours_summary %>%
+  mutate(total_month_booked_new_perc = total_month_booked_new/(total_month_booked))
+
+
+saveRDS(slot_booked_hours_summary, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/physician-access/slot_booked_hours_summary.rds")
+
+
+# Total Booked and Arrived Hours -----------------------------------------------
+slot_booked_hours_summary_site <- slot_raw %>%
+  group_by(NPI, PROVIDER_NAME, VISIT_PROV_STAFF_RESOURCE_C, SITE, VISIT_GROUP_NUM, Appt.MonthYear, Appt.Week) %>%
+  summarise(total_booked_dur = sum(total_booked_dur, na.rm = TRUE)) %>%
+  mutate(VISIT_GROUP_NUM = ifelse(is.na(VISIT_GROUP_NUM), "booked_established", "booked_new")) %>%
+  pivot_wider(names_from = VISIT_GROUP_NUM,
+              values_from = total_booked_dur,
+              values_fill = 0) %>%
+  mutate(booked_total = booked_established + booked_new) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, SITE, Appt.MonthYear) %>%
+  summarise(total_month_booked_established = sum(booked_established)/60,
+            total_month_booked_new = sum(booked_new)/60,
+            total_month_booked = sum(booked_total)/60,
+            total_month_booked_session = total_month_booked/4,
+            avg_week_booked = mean(booked_total)/60,
+            avg_week_booked_session = avg_week_booked/4)
+
+slot_booked_hours_summary_site <- slot_booked_hours_summary_site %>%
+  mutate(total_month_booked_new_perc = total_month_booked_new/(total_month_booked))
+
+
+saveRDS(slot_booked_hours_summary_site, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/physician-access/slot_booked_hours_summary_site.rds")
+
+# Arrived Hours issue found in "slot_booked_filled_check.xlsx"
+# slot_booked_filled_check <- slot_raw_tbl %>%
+#   filter(PROVIDER_NAME == "KIM, RENITA SUHYUN") %>%
+#   filter(CONTACT_DATE == TO_DATE("2022-11-29 00:00:00", "YYYY-MM-DD HH24:MI:SS")) %>%
+#   collect()
+#
+#
+#  write_xlsx(slot_booked_filled_check, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/slot_booked_filled_check.xlsx")
+
+```
+
+
+```{r Total Arrived Hours, echo = FALSE, warning = FALSE, message = FALSE}
+
+
+# test <- slot_raw_tbl %>%
+#   filter(PROVIDER_NAME == "RAMASWAMY, RAVISHANKAR") %>%
+#   collect()
+# 
+# write_xlsx(test, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/arrived_hours_validation.xlsx")
+
+# Total Arrived Hours by Provider -----------------------------------------------
+slot_arrived_hours_summary <- slot_raw %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, VISIT_GROUP_NUM, Appt.MonthYear, Appt.Week) %>%
+  summarise(total_arrived_dur = sum(total_arrived_dur, na.rm = TRUE)) %>%
+  mutate(VISIT_GROUP_NUM = ifelse(is.na(VISIT_GROUP_NUM), "arrived_established", "arrived_new")) %>%
+  pivot_wider(names_from = VISIT_GROUP_NUM,
+              values_from = total_arrived_dur,
+              values_fill = 0) %>%
+  mutate(arrived_total = arrived_established + arrived_new) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.MonthYear) %>%
+  summarise(total_month_arrived_established = sum(arrived_established)/60,
+            total_month_arrived_new = sum(arrived_new)/60,
+            total_month_arrived = sum(arrived_total)/60,
+            total_month_arrived_session = total_month_arrived/4,
+            avg_week_arrived = mean(arrived_total)/60,
+            avg_week_arrived_session = avg_week_arrived/4)
+
+slot_arrived_hours_summary <- slot_arrived_hours_summary %>%
+  mutate(total_month_arrived_new_perc = total_month_arrived_new/(total_month_arrived))
+
+
+saveRDS(slot_arrived_hours_summary, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/physician-access/slot_arrived_hours_summary.rds")
+
+
+# Total Arrived Hours by Site -----------------------------------------------
+slot_arrived_hours_summary_site <- slot_raw %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, SITE, VISIT_GROUP_NUM, Appt.MonthYear, Appt.Week) %>%
+  summarise(total_arrived_dur = sum(total_arrived_dur, na.rm = TRUE)) %>%
+  mutate(VISIT_GROUP_NUM = ifelse(is.na(VISIT_GROUP_NUM), "arrived_established", "arrived_new")) %>%
+  pivot_wider(names_from = VISIT_GROUP_NUM,
+              values_from = total_arrived_dur,
+              values_fill = 0) %>%
+  mutate(arrived_total = arrived_established + arrived_new) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, SITE, Appt.MonthYear) %>%
+  summarise(total_month_arrived_established = sum(arrived_established)/60,
+            total_month_arrived_new = sum(arrived_new)/60,
+            total_month_arrived = sum(arrived_total)/60,
+            total_month_arrived_session = total_month_arrived/4,
+            avg_week_arrived = mean(arrived_total)/60,
+            avg_week_arrived_session = avg_week_arrived/4)
+
+slot_arrived_hours_summary_site <- slot_arrived_hours_summary_site %>%
+  mutate(total_month_arrived_new_perc = total_month_arrived_new/(total_month_arrived))
+
+
+saveRDS(slot_arrived_hours_summary_site, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/physician-access/slot_arrived_hours_summary_site.rds")
+
+# Arrived Hours issue found in "slot_booked_filled_check.xlsx"
+# slot_booked_filled_check <- slot_raw_tbl %>%
+#   filter(PROVIDER_NAME == "KIM, RENITA SUHYUN") %>%
+#   filter(CONTACT_DATE == TO_DATE("2022-11-29 00:00:00", "YYYY-MM-DD HH24:MI:SS")) %>%
+#   collect()
+#
+#
+#  write_xlsx(slot_booked_filled_check, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/slot_booked_filled_check.xlsx")
+
+```
+
+
+```{r Unavailable Slot Reason Category Mapping, echo = FALSE, warning = FALSE, message = FALSE}
+
+unavail_reason_mapping <- data.frame(
+  unavail_reason_category = c(
+    rep("TIME_UNAVAIL_RSN_C",21),
+    rep("DAY_UNAVAIL_RSN_C",21),
+    rep("TIME_HELD_RSN_C",3),
+    rep("DAY_HELD_RSN_C",3)
+  ),
+  RSN_C = c(
+    seq(1:21),
+    seq(1:21),
+    c(1, 101, 102),
+    c(1, 101, 102)
+  ),
+  unavail_reason = c(
+    rep(c("Vacation",
+          "Meeting",
+          "Sick",
+          "Holiday",
+          "Rounds",
+          "Emergency",
+          "Chart Review",
+          "Seminar",
+          "Continuing Education",
+          "Delivery",
+          "Surgery",
+          "Equipment Repair/Maintenance",
+          "Personal",
+          "Attending/Precepting",
+          "Other",
+          "Admin",
+          "Drug Reps",
+          "Legal",
+          "Lunch",
+          "Offsite Care",
+          "Provider Requested"
+          ), 2),
+    rep(c("Wait List", "Possible Vacation", "Provider Requested"), 2)
+
+  )
+)
+
+unavail_reason_mapping <- unavail_reason_mapping %>%
+  mutate(RSN_C = as.character(RSN_C))
+
+```
+
+
+```{r Total Unavailable Time, echo = FALSE, warning = FALSE, message = FALSE}
+
+# Total Unavailable Time within Templates --------------------------------------
+slot_unavail <- slot_raw_tbl %>%
+  mutate(unavail = paste0(TIME_UNAVAIL_YN,DAY_UNAVAIL_YN,DAY_HELD_YN,TIME_HELD_YN)) %>%
+  # filter(unavail %in% c("YNNN","YNNY", "NNNY")) %>%
+  filter(unavail != "NNNN") %>%
+  mutate(Appt.DateYear = TO_DATE(CONTACT_DATE)) %>%
+  mutate(Appt.Year = year(CONTACT_DATE),
+         Appt.Month = month(CONTACT_DATE)) %>%
+  filter(Appt.Year == 2022) %>%
+  mutate(unavail_reason_category = case_when(!is.na(DAY_UNAVAIL_RSN_C) ~ "DAY_UNAVAIL_RSN_C",
+                                             !is.na(DAY_HELD_RSN_C) ~ "DAY_HELD_RSN_C",
+                                             !is.na(TIME_UNAVAIL_RSN_C) ~ "TIME_UNAVAIL_RSN_C",
+                                             TRUE ~ "TIME_HELD_RSN_C"),
+         RSN_C = case_when(!is.na(DAY_UNAVAIL_RSN_C) ~ DAY_UNAVAIL_RSN_C,
+                                             !is.na(DAY_HELD_RSN_C) ~ DAY_HELD_RSN_C,
+                                             !is.na(TIME_UNAVAIL_RSN_C) ~ TIME_UNAVAIL_RSN_C,
+                                             TRUE ~ TIME_HELD_RSN_C)) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.Year, Appt.Month, Appt.DateYear,
+           unavail_reason_category, RSN_C) %>%
+  summarise(total_unavail_dur = sum(SLOT_LENGTH, na.rm = TRUE)) %>%
+  collect() %>%
+  mutate(Appt.MonthYear = format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%Y-%m"),
+         Appt.MonNum = as.numeric(format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%m")),
+         Appt.Month = format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%b"),
+         Appt.Quarter = quarters(as.Date(Appt.DateYear, format="%Y-%m-%d")),
+         Appt.Week = floor_date(as.Date(Appt.DateYear, format="%Y-%m-%d"), unit="week", week_start = 1),
+         Appt.Day = format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%a"))
+
+
+slot_unavail <- slot_unavail %>%
+  mutate(RSN_C = as.character(RSN_C)) %>%
+  mutate(unavail_type = case_when(str_detect(unavail_reason_category, "UNAVAIL") ~ "Unavailable",
+                                  TRUE ~ "Held"))
+
+
+slot_unavail <- left_join(slot_unavail, unavail_reason_mapping, by = c("unavail_reason_category","RSN_C"))
+
+saveRDS(slot_unavail, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/physician-access/slot_unavail.rds")
+
+
+# Total Time Unavailable -------------------------------------------------------
+slot_unavail_day_summary <- slot_unavail %>%
+  filter(unavail_reason_category == "DAY_UNAVAIL_RSN_C") %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.MonthYear, Appt.Week, unavail_reason_category) %>%
+  summarise(total_unavail_dur = sum(total_unavail_dur, na.rm = TRUE)) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.MonthYear, unavail_reason_category) %>%
+  summarise(total_month_unavail_day_dur = sum(total_unavail_dur)/60,
+            total_month_unavail_day_session = total_month_unavail_day_dur/4,
+            avg_week_unavail_day_dur = mean(total_unavail_dur)/60,
+            avg_week_unavail_day_session = avg_week_unavail_day_dur/(4))
+
+slot_unavail_time_summary <- slot_unavail %>%
+  filter(unavail_reason_category == "TIME_UNAVAIL_RSN_C") %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.MonthYear, Appt.Week, unavail_reason_category) %>%
+  summarise(total_unavail_dur = sum(total_unavail_dur, na.rm = TRUE)) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.MonthYear, unavail_reason_category) %>%
+  summarise(total_month_unavail_time_dur = sum(total_unavail_dur)/60,
+            total_month_unavail_time_session = total_month_unavail_time_dur/4,
+            avg_week_unavail_time_dur = mean(total_unavail_dur)/60,
+            avg_week_unavail_time_session = avg_week_unavail_time_dur/(4))
+
+
+# Total Time Held --------------------------------------------------------------
+slot_held_day_summary <- slot_unavail %>%
+  filter(unavail_reason_category == "DAY_HELD_RSN_C") %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.MonthYear, Appt.Week, unavail_reason_category) %>%
+  summarise(total_held_dur = sum(total_unavail_dur, na.rm = TRUE)) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.MonthYear, unavail_reason_category) %>%
+  summarise(total_month_held_day_dur = sum(total_held_dur)/60,
+            total_month_held_day_session = total_month_held_day_dur/4,
+            avg_week_held_day_dur = mean(total_held_dur)/60,
+            avg_week_held_day_session = avg_week_held_day_dur/(4))
+
+slot_held_time_summary <- slot_unavail %>%
+  filter(unavail_reason_category == "TIME_HELD_RSN_C") %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.MonthYear, Appt.Week, unavail_reason_category) %>%
+  summarise(total_held_dur = sum(total_unavail_dur, na.rm = TRUE)) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.MonthYear, unavail_reason_category) %>%
+  summarise(total_month_held_time_dur = sum(total_held_dur)/60,
+            total_month_held_time_session = total_month_held_time_dur/4,
+            avg_week_held_time_dur = mean(total_held_dur)/60,
+            avg_week_held_time_session = avg_week_held_time_dur/(4))
+
+
+
+saveRDS(slot_unavail_day_summary, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/physician-access/slot_unavail_day_summary.rds")
+saveRDS(slot_unavail_time_summary, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/physician-access/slot_unavail_time_summary.rds")
+
+saveRDS(slot_held_day_summary, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/physician-access/slot_held_day_summary.rds")
+saveRDS(slot_held_time_summary, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/physician-access/slot_held_time_summary.rds")
+
+
+# By Site ----------------------------------------------------------------------
+# Total Unavailable Time within Templates --------------------------------------
+slot_unavail_site <- slot_raw_tbl %>%
+  mutate(unavail = paste0(TIME_UNAVAIL_YN,DAY_UNAVAIL_YN,DAY_HELD_YN,TIME_HELD_YN)) %>%
+  # filter(unavail %in% c("YNNN","YNNY", "NNNY")) %>%
+  filter(unavail != "NNNN") %>%
+  mutate(Appt.DateYear = TO_DATE(CONTACT_DATE)) %>%
+  mutate(Appt.Year = year(CONTACT_DATE),
+         Appt.Month = month(CONTACT_DATE)) %>%
+  filter(Appt.Year == 2022) %>%
+  mutate(unavail_reason_category = case_when(!is.na(DAY_UNAVAIL_RSN_C) ~ "DAY_UNAVAIL_RSN_C",
+                                             !is.na(DAY_HELD_RSN_C) ~ "DAY_HELD_RSN_C",
+                                             !is.na(TIME_UNAVAIL_RSN_C) ~ "TIME_UNAVAIL_RSN_C",
+                                             TRUE ~ "TIME_HELD_RSN_C"),
+         RSN_C = case_when(!is.na(DAY_UNAVAIL_RSN_C) ~ DAY_UNAVAIL_RSN_C,
+                                             !is.na(DAY_HELD_RSN_C) ~ DAY_HELD_RSN_C,
+                                             !is.na(TIME_UNAVAIL_RSN_C) ~ TIME_UNAVAIL_RSN_C,
+                                             TRUE ~ TIME_HELD_RSN_C)) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, SITE, Appt.Year, Appt.Month, Appt.DateYear,
+           unavail_reason_category, RSN_C) %>%
+  summarise(total_unavail_dur = sum(SLOT_LENGTH, na.rm = TRUE)) %>%
+  collect() %>%
+  mutate(Appt.MonthYear = format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%Y-%m"),
+         Appt.MonNum = as.numeric(format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%m")),
+         Appt.Month = format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%b"),
+         Appt.Quarter = quarters(as.Date(Appt.DateYear, format="%Y-%m-%d")),
+         Appt.Week = floor_date(as.Date(Appt.DateYear, format="%Y-%m-%d"), unit="week", week_start = 1),
+         Appt.Day = format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%a"))
+
+
+slot_unavail_site <- slot_unavail_site %>%
+  mutate(RSN_C = as.character(RSN_C)) %>%
+  mutate(unavail_type = case_when(str_detect(unavail_reason_category, "UNAVAIL") ~ "Unavailable",
+                                  TRUE ~ "Held"))
+
+
+slot_unavail_site <- left_join(slot_unavail_site, unavail_reason_mapping, by = c("unavail_reason_category","RSN_C"))
+
+
+# Total Time Unavailable -------------------------------------------------------
+slot_unavail_day_summary_site <- slot_unavail_site %>%
+  filter(unavail_reason_category == "DAY_UNAVAIL_RSN_C") %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, SITE, Appt.MonthYear, Appt.Week, unavail_reason_category) %>%
+  summarise(total_unavail_dur = sum(total_unavail_dur, na.rm = TRUE)) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.MonthYear, unavail_reason_category) %>%
+  summarise(total_month_unavail_day_dur = sum(total_unavail_dur)/60,
+            total_month_unavail_day_session = total_month_unavail_day_dur/4)
+
+slot_unavail_time_summary_site <- slot_unavail_site %>%
+  filter(unavail_reason_category == "TIME_UNAVAIL_RSN_C") %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, SITE, Appt.MonthYear, Appt.Week, unavail_reason_category) %>%
+  summarise(total_unavail_dur = sum(total_unavail_dur, na.rm = TRUE)) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.MonthYear, unavail_reason_category) %>%
+  summarise(total_month_unavail_time_dur = sum(total_unavail_dur)/60,
+            total_month_unavail_time_session = total_month_unavail_time_dur/4)
+
+
+
+# Total Time Held --------------------------------------------------------------
+slot_held_day_summary_site <- slot_unavail_site %>%
+  filter(unavail_reason_category == "DAY_HELD_RSN_C") %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, SITE, Appt.MonthYear, Appt.Week, unavail_reason_category) %>%
+  summarise(total_held_dur = sum(total_unavail_dur, na.rm = TRUE)) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.MonthYear, unavail_reason_category) %>%
+  summarise(total_month_held_day_dur = sum(total_held_dur)/60,
+            total_month_held_day_session = total_month_held_day_dur/4)
+
+slot_held_time_summary_site <- slot_unavail_site %>%
+  filter(unavail_reason_category == "TIME_HELD_RSN_C") %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, SITE, Appt.MonthYear, Appt.Week, unavail_reason_category) %>%
+  summarise(total_held_dur = sum(total_unavail_dur, na.rm = TRUE)) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.MonthYear, unavail_reason_category) %>%
+  summarise(total_month_held_time_dur = sum(total_held_dur)/60,
+            total_month_held_time_session = total_month_held_time_dur/4)
+
+
+saveRDS(slot_unavail_day_summary_site, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/physician-access/slot_unavail_day_summary_site.rds")
+saveRDS(slot_unavail_time_summary_site, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/physician-access/slot_unavail_time_summary_site.rds")
+
+saveRDS(slot_held_day_summary_site, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/physician-access/slot_held_day_summary_site.rds")
+saveRDS(slot_held_time_summary_site, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/physician-access/slot_held_time_summary_site.rds")
+
+
+```
+
+
+```{r Slot Unavailable Details, echo = FALSE, warning = FALSE, message = FALSE}
+
+slot_unavail_detail_prov <- slot_unavail %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.Year, Appt.MonthYear, Appt.Day, Appt.DateYear, unavail_type, unavail_reason) %>%
+  summarise(total_unavail_dur = sum(total_unavail_dur)) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, Appt.Year, Appt.MonthYear, Appt.Day, unavail_type, unavail_reason) %>%
+  summarise(avg_day_unavail_dur = round(mean(total_unavail_dur)),
+            total_unavail_dur = sum(total_unavail_dur)) 
+
+saveRDS(slot_unavail_detail_prov, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/physician-access/slot_unavail_detail_prov.rds")
+
+```
+
+
+```{r First and Last Slot, echo = FALSE, warning = FALSE, message = FALSE}
+
+slot_first_last_summary_site <- slot_raw_tbl %>%
+  # mutate(unavail = paste0(TIME_UNAVAIL_YN,DAY_UNAVAIL_YN,DAY_HELD_YN,TIME_HELD_YN)) %>%
+  # filter(unavail == "NNNN") %>%
+  filter(BOOKED_MINUTES > 0) %>%
+  mutate(Appt.DateYear = TO_DATE(CONTACT_DATE)) %>%
+  mutate(Appt.Year = year(CONTACT_DATE),
+         Appt.Month = month(CONTACT_DATE)) %>%
+  filter(Appt.Year == 2022) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, SITE, DEPARTMENT_NAME, Appt.DateYear) %>%
+  summarise(start = min(SLOT_BEGIN_TIME),
+            end = max(SLOT_BEGIN_TIME),
+            total_booked_dur = sum(BOOKED_MINUTES, na.rm = TRUE)) %>%
+  collect() %>%
+  mutate(`First Slot Time` = format(as.POSIXct(as.ITime(start, format = "%H:%M")), "%H:%M"),
+         `Last Slot Time` = format(as.POSIXct(as.ITime(end, format = "%H:%M")), "%H:%M")) %>%
+  mutate(Appt.MonthYear = format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%Y-%m"),
+         Appt.MonNum = as.numeric(format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%m")),
+         Appt.Month = format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%b"),
+         Appt.Quarter = quarters(as.Date(Appt.DateYear, format="%Y-%m-%d")),
+         Appt.Week = floor_date(as.Date(Appt.DateYear, format="%Y-%m-%d"), unit="week", week_start = 1),
+         Appt.Day = format(as.Date(Appt.DateYear, format="%Y-%m-%d"), "%a")) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, SITE, DEPARTMENT_NAME, Appt.MonthYear, Appt.Day) %>%
+  mutate(avg_daily_booked_dur = mean(total_booked_dur, na.rm = TRUE)/60) %>%
+  group_by(NPI, VISIT_PROV_STAFF_RESOURCE_C, SITE, DEPARTMENT_NAME, Appt.MonthYear, Appt.Day, `First Slot Time`, `Last Slot Time`, avg_daily_booked_dur) %>%
+  summarise(total_days = n())  %>%
+  # pivot_longer(c("First Slot Time","Last Slot Time"),
+  #             names_to = "slot_type",
+  #             values_to = "time") %>%
+  # arrange(time) %>%
+  arrange(NPI, Appt.MonthYear, factor(Appt.Day, levels = c("Mon","Tue","Wed","Thu","Fri","Sat","Sun"))) 
+
+# slot_first_last_summary_site <- slot_first_last_summary_site %>%
+#   mutate(total_bookable_dur = difftime(as.POSIXct(`Last Slot Time`,format="%H:%M"), as.POSIXct(`First Slot Time`,format="%H:%M"), "mins"))
+
+saveRDS(slot_first_last_summary_site, "/SharedDrive/deans/Presidents/SixSigma/Individual Folders/Current Employees/Engineers/So Youn Kweon/server-upload/physician-access/slot_first_last_summary_site.rds")
+
+```
+
